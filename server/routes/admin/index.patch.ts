@@ -1,5 +1,5 @@
 import { createError, eventHandler, getQuery } from "h3";
-import { supabase } from "server/utils/supabase";
+import { supabase } from "../../utils/supabase";
 
 export default eventHandler(async (event) => {
     const { userId,role } = getQuery(event)
