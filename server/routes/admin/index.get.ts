@@ -21,7 +21,6 @@ export default defineEventHandler ( async (event) => {
     console.log(token)
 
     if (!userid) {
-        console.log("invalid 1")
         throw createError({
             statusCode: 403,
             statusMessage: "Invalid Token"
@@ -34,7 +33,6 @@ export default defineEventHandler ( async (event) => {
         .eq("role", "Associate");
 
     if (associatesError) {
-        console.log("invalid 2")
         throw createError({
             statusCode : 500,
             statusMessage : associatesError.message
@@ -48,10 +46,21 @@ export default defineEventHandler ( async (event) => {
         .eq("role","Manager")
 
     if (managersError) {
-        console.log("invalid 3")
         throw createError({
             statusCode : 500,
             statusMessage : managersError.message
+        })
+    }
+
+    const { data: admins, error: adminsError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("role", "Admin");
+
+    if (adminsError) {
+        throw createError({
+            statusCode : 500,
+            statusMessage : adminsError.message
         })
     }
 
@@ -68,5 +77,5 @@ export default defineEventHandler ( async (event) => {
         })
     }
 
-    return { req_data: [associates,managers,users]}
+    return { req_data: [admins,managers,associates,users]}
 })
