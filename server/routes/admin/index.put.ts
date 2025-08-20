@@ -1,10 +1,10 @@
-import { eventHandler, getQuery, createError } from "h3";
+import { createError, eventHandler, getQuery } from "h3";
 import { supabase } from "../../utils/supabase";
 
-export default eventHandler( async (event) => {
-    const { userId, newRole} = getQuery(event)
+export default eventHandler(async (event) => {
+    const { userId,role } = getQuery(event)
 
-    if (!userId ) {
+    if (!userId || !role) {
         throw createError({
             statusCode: 400,
             statusMessage: "Insufficient Data"
@@ -31,17 +31,24 @@ export default eventHandler( async (event) => {
         })
     }
 
-    const { error: patchError } = await supabase
-        .from("users")
-        .update({role: newRole})
-        .eq("userid",userId)
-    
-    if (patchError) {
+    if (checkUser.role) {
         throw createError({
-            statusCode: 500,
-            statusMessage: "Role of user not updated"
+            statusCode: 409,
+            statusMessage: "User aldready has a role"
         })
     }
 
-    return { message : "Role Updated"}
+    const { error: putError } = await supabase
+        .from("users")
+        .update({role: role})
+        .eq("userid",userId)
+    
+    if (putError) {
+        throw createError({
+            statusCode: 500,
+            statusMessage: "Role of user not Added"
+        })
+    }
+
+    return { message : "Role Added"}
 })
